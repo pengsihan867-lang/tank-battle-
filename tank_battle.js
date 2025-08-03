@@ -1,7 +1,7 @@
 // 游戏常量
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
-const TANK_SIZE = 60;
+const TANK_SIZE = 30;
 const BULLET_SIZE = 4;
 const TANK_SPEED = 3;
 const BULLET_SPEED = 7;
@@ -52,29 +52,39 @@ class Wall {
     draw() {
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.rotate((this.direction * 90) * Math.PI / 180);
         
-        // 坦克主体
-        ctx.fillStyle = this.color;
-        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        if (this.type === 'brick') {
+            // 砖墙样式
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+            
+            // 砖块纹理
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(-this.size/2, -this.size/2, this.size, this.size);
+            
+            // 砖块分割线
+            ctx.beginPath();
+            ctx.moveTo(-this.size/2, 0);
+            ctx.lineTo(this.size/2, 0);
+            ctx.moveTo(0, -this.size/2);
+            ctx.lineTo(0, this.size/2);
+            ctx.stroke();
+        } else {
+            // 钢墙样式
+            ctx.fillStyle = '#708090';
+            ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+            
+            // 金属纹理
+            ctx.strokeStyle = '#2F4F4F';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-this.size/2, -this.size/2, this.size, this.size);
+            
+            // 金属光泽效果
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillRect(-this.size/2 + 2, -this.size/2 + 2, this.size/3, this.size/3);
+        }
         
-        // 坦克炮管
-        ctx.fillStyle = '#333';
-        ctx.fillRect(-2, -this.size/2 - 8, 4, 8);
-        
-        // 坦克装饰
-        ctx.fillStyle = '#666';
-        ctx.fillRect(-this.size/2 + 2, -this.size/2 + 2, this.size - 4, this.size - 4);
-        
-        ctx.restore();
-
-        // 绘制名字（在坦克下方）
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 18px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(this.isPlayer ? '王宇翱' : '吴泽凯', 0, this.size/2 + 20);
         ctx.restore();
     }
 
@@ -351,14 +361,104 @@ class Tank {
         ctx.fillRect(-this.size/2 + 2, -this.size/2 + 2, this.size - 4, this.size - 4);
         
         ctx.restore();
+        
+        // 绘制角色头像
+        if (this.isPlayer) {
+            drawWangYuAo(this.x, this.y, this.size);
+        } else {
+            drawWuZeKai(this.x, this.y, this.size);
+        }
+    }
 
-        // 绘制名字（在坦克下方）
+    getBounds() {
+        return {
+            left: this.x - this.size/2,
+            right: this.x + this.size/2,
+            top: this.y - this.size/2,
+            bottom: this.y + this.size/2
+        };
+    }
+}
+
+// 子弹类
+class Bullet {
+    constructor(x, y, direction, isPlayerBullet) {
+        this.x = x;
+        this.y = y;
+        this.direction = direction;
+        this.isPlayerBullet = isPlayerBullet;
+        this.speed = BULLET_SPEED;
+        this.size = BULLET_SIZE;
+    }
+
+    update() {
+        switch (this.direction) {
+            case 0: this.y -= this.speed; break;
+            case 1: this.x += this.speed; break;
+            case 2: this.y += this.speed; break;
+            case 3: this.x -= this.speed; break;
+        }
+    }
+
+    draw() {
+        ctx.fillStyle = this.isPlayerBullet ? '#4ecdc4' : '#ff6b6b';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 子弹尾迹效果
+        ctx.fillStyle = this.isPlayerBullet ? 'rgba(78, 205, 196, 0.5)' : 'rgba(255, 107, 107, 0.5)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    isOutOfBounds() {
+        return this.x < 0 || this.x > CANVAS_WIDTH || this.y < 0 || this.y > CANVAS_HEIGHT;
+    }
+
+    getBounds() {
+        return {
+            left: this.x - this.size,
+            right: this.x + this.size,
+            top: this.y - this.size,
+            bottom: this.y + this.size
+        };
+    }
+}
+
+// 爆炸效果类
+class Explosion {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 5;
+        this.maxRadius = 30;
+        this.life = 1.0;
+        this.decay = 0.05;
+    }
+
+    update() {
+        this.radius += 2;
+        this.life -= this.decay;
+    }
+
+    draw() {
+        const alpha = this.life;
         ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 18px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(this.isPlayer ? '王宇翱' : '吴泽凯', 0, this.size/2 + 20);
+        ctx.globalAlpha = alpha;
+        
+        // 爆炸效果
+        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+        gradient.addColorStop(0, 'rgba(255, 255, 0, 1)');
+        gradient.addColorStop(0.5, 'rgba(255, 100, 0, 0.8)');
+        gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
         ctx.restore();
     }
 

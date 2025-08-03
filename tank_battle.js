@@ -1,10 +1,3 @@
-
-// 加载玩家和敌人头像图片
-const playerImage = new Image();
-playerImage.src = 'player_tank.png';
-
-const enemyImage = new Image();
-enemyImage.src = 'enemy_tank.png';
 // 游戏常量
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
@@ -60,22 +53,28 @@ class Wall {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate((this.direction * 90) * Math.PI / 180);
+        
+        // 坦克主体
+        ctx.fillStyle = this.color;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        
+        // 坦克炮管
+        ctx.fillStyle = '#333';
+        ctx.fillRect(-2, -this.size/2 - 8, 4, 8);
+        
+        // 坦克装饰
+        ctx.fillStyle = '#666';
+        ctx.fillRect(-this.size/2 + 2, -this.size/2 + 2, this.size - 4, this.size - 4);
+        
+        ctx.restore();
 
-        const imgSize = this.size;
-        if (this.isPlayer) {
-            ctx.drawImage(playerImage, -imgSize/2, -imgSize/2, imgSize, imgSize);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('王宇翱', 0, imgSize/2 + 18);
-        } else {
-            ctx.drawImage(enemyImage, -imgSize/2, -imgSize/2, imgSize, imgSize);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('吴泽凯', 0, imgSize/2 + 18);
-        }
-
+        // 绘制名字（在坦克下方）
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.isPlayer ? '王宇翱' : '吴泽凯', 0, this.size/2 + 20);
         ctx.restore();
     }
 
@@ -338,22 +337,28 @@ class Tank {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate((this.direction * 90) * Math.PI / 180);
+        
+        // 坦克主体
+        ctx.fillStyle = this.color;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        
+        // 坦克炮管
+        ctx.fillStyle = '#333';
+        ctx.fillRect(-2, -this.size/2 - 8, 4, 8);
+        
+        // 坦克装饰
+        ctx.fillStyle = '#666';
+        ctx.fillRect(-this.size/2 + 2, -this.size/2 + 2, this.size - 4, this.size - 4);
+        
+        ctx.restore();
 
-        const imgSize = this.size;
-        if (this.isPlayer) {
-            ctx.drawImage(playerImage, -imgSize/2, -imgSize/2, imgSize, imgSize);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('王宇翱', 0, imgSize/2 + 18);
-        } else {
-            ctx.drawImage(enemyImage, -imgSize/2, -imgSize/2, imgSize, imgSize);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('吴泽凯', 0, imgSize/2 + 18);
-        }
-
+        // 绘制名字（在坦克下方）
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.isPlayer ? '王宇翱' : '吴泽凯', 0, this.size/2 + 20);
         ctx.restore();
     }
 
